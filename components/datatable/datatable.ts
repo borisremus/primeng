@@ -171,7 +171,7 @@ export class ColumnFooters {
                             <p-columnBodyTemplateLoader [column]="col" [rowData]="rowData" [rowIndex]="rowIndex + dt.first"></p-columnBodyTemplateLoader>
                         </span>
                         <div class="ui-cell-editor" *ngIf="col.editable">
-                            <input *ngIf="!col.editorTemplate" type="text" [(ngModel)]="rowData[col.field]" required="true" (blur)="dt.switchCellToViewMode($event.target)"
+                            <input *ngIf="!col.editorTemplate" type="text" [(ngModel)]="rowData[col.field]" required="true" (blur)="dt.onCellEditBlur($event, col, rowData, colIndex, rowIndex)"
                                 (keydown)="dt.onCellEditorKeydown($event, col, rowData, colIndex, rowIndex)" class="ui-inputtext ui-widget ui-state-default ui-corner-all"/>
                             <p-columnEditorTemplateLoader *ngIf="col.editorTemplate" [column]="col" [rowData]="rowData" [rowIndex]="rowIndex"></p-columnEditorTemplateLoader>
                         </div>
@@ -558,6 +558,8 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
     @Output() onEdit: EventEmitter<any> = new EventEmitter();
 
     @Output() onEditCancel: EventEmitter<any> = new EventEmitter();
+    
+    @Output() onCellBlur: EventEmitter<any> = new EventEmitter();
     
     @Output() onPage: EventEmitter<any> = new EventEmitter();
         
@@ -1537,12 +1539,19 @@ export class DataTable implements AfterViewChecked,AfterViewInit,AfterContentIni
         }
     }
 
+    onCellEditBlur(event, column: Column, rowData: any, colIndex: number, rowIndex: number) {
+        this.onCellBlur.emit({column: column, data: rowData, index: rowIndex});
+        this.switchCellToViewMode(event.target);
+    }
+    
+
     switchCellToViewMode(element: any) {
         this.editingCell = null;
         let cell = this.findCell(element); 
         this.domHandler.removeClass(cell, 'ui-cell-editing');
     }
 
+    
     onCellEditorKeydown(event, column: Column, rowData: any, colIndex: number, rowIndex: number) {
         if(this.editable) {
             this.onEdit.emit({originalEvent: event, column: column, data: rowData, index: rowIndex});
